@@ -153,5 +153,12 @@
       </plugin>
     </plugins>
   </reporting>
+  
+  <distributionManagement>
+    <snapshotRepository>
+      <id>java.net-m2-repository</id>
+      <url>http://maven.hudson-labs.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
 
