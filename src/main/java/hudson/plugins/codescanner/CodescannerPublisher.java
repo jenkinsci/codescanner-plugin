@@ -2,7 +2,6 @@ package hudson.plugins.codescanner;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.Proc;
 import hudson.Launcher.LocalLauncher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -45,7 +44,7 @@ public class CodescannerPublisher extends HealthAwarePublisher {
     public String executable;
 
     /**
-     * Creates a new instance of <code>WarningPublisher</code>.
+     * Creates a new instance of <code>CodescannerPublisher</code>.
      *
      * @param threshold
      *            Annotation threshold to be reached if a build should be
@@ -84,7 +83,7 @@ public class CodescannerPublisher extends HealthAwarePublisher {
             final String defaultEncoding, final String sourcecodedir, final String executable,
             final boolean useDeltaValues) {
         super(threshold, newThreshold, failureThreshold, newFailureThreshold,
-                healthy, unHealthy, thresholdLimit, "UTF-8", useDeltaValues, "CODESCANNER");
+                healthy, unHealthy, thresholdLimit, "UTF-8", useDeltaValues, false, "CODESCANNER");
 
         this.sourcecodedir = sourcecodedir;
         this.executable = executable;
@@ -122,10 +121,10 @@ public class CodescannerPublisher extends HealthAwarePublisher {
             if (!executable.equalsIgnoreCase("")) {
                 logger.log("Starting CodeScanner...");
                 Launcher laucher = new LocalLauncher(TaskListener.NULL);
-                final String cmd = "cmd /C " + executable + " " + sourcecodedir;
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                Proc proc = laucher.launch(cmd, build.getEnvVars(), out, build.getWorkspace());
-                proc.join();
+                laucher.launch().cmds("cmd", "/C", executable, sourcecodedir)
+                                .envs(build.getEnvironment(TaskListener.NULL))
+                                .stdout(out).pwd(build.getWorkspace()).join();
                 iterator = IOUtils.lineIterator(new ByteArrayInputStream(out.toByteArray()), "UTF-8");
             } else {
                 logger.log("Using precreated result file from:");
